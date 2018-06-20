@@ -182,6 +182,8 @@ func (d *driver) Mount(
 		"volumeID":   volumeID,
 		"opts":       opts}).Info("mounting volume")
 
+	ctx.Infof("pigou mount linux id %s name %s", volumeID, volumeName)
+
 	lsAtt := types.VolAttReqWithDevMapOnlyVolsAttachedToInstanceOrUnattachedVols
 	if opts.Preempt {
 		lsAtt = types.VolAttReqWithDevMapForInstance
@@ -207,6 +209,8 @@ func (d *driver) Mount(
 	client := context.MustClient(ctx)
 	if vol.AttachmentState == types.VolumeAvailable ||
 		(opts.Preempt && vol.AttachmentState != types.VolumeAttached) {
+
+		ctx.Infof("piguo vol attachment state %s", vol.AttachmentState)
 
 		mp, err := d.getVolumeMountPath(vol.Name)
 		if err != nil {
@@ -255,21 +259,28 @@ func (d *driver) Mount(
 		return "", nil, goof.New("volume did not attach")
 	}
 
+	ctx.Info("piguo start instance inpsect")
 	inst, err := client.Storage().InstanceInspect(ctx, utils.NewStore())
 	if err != nil {
 		return "", nil, goof.New("problem getting instance ID")
 	}
+	ctx.Info("piguo instance inspect finished")
 	var ma *types.VolumeAttachment
 	for _, att := range vol.Attachments {
 		if att.InstanceID.ID == inst.InstanceID.ID {
 			ma = att
+			ctx.Infof("piguo id match %s %v", att.InstanceID.ID, *att)
 			break
 		}
 	}
 
+	ctx.Infof("piguo ma is %+v", *ma)
+
 	if ma == nil {
 		return "", nil, goof.New("no local attachment found")
 	}
+
+	ctx.Infof("piguo device name is %s", ma.DeviceName)
 
 	if ma.DeviceName == "" {
 		return "", nil, goof.New("no device name returned")
@@ -279,6 +290,8 @@ func (d *driver) Mount(
 	if err != nil {
 		return "", nil, err
 	}
+
+	ctx.Infof("piguo mount path is %s", mountPath)
 
 	mounts, err := client.OS().Mounts(
 		ctx, ma.DeviceName, "", opts.Opts)

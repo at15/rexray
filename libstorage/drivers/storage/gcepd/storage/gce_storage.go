@@ -854,6 +854,10 @@ func getAttachment(
 	attachments types.VolumeAttachmentsTypes,
 	ld *types.LocalDevices) []*types.VolumeAttachment {
 
+	log.Infof("piguo disk is %v", *disk)
+	log.Infof("piguo disk name", disk.Name)
+	log.Infof("piguo ld device map %v", ld.DeviceMap)
+
 	var volAttachments []*types.VolumeAttachment
 
 	for _, link := range disk.Users {
@@ -864,6 +868,8 @@ func getAttachment(
 				Driver: gcepd.Name,
 			},
 		}
+		log.Infof("piguo attachment devices %t", attachments.Devices())
+
 		if attachments.Devices() {
 			if dev, ok := ld.DeviceMap[disk.Name]; ok {
 				att.DeviceName = dev

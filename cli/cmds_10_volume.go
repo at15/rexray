@@ -9,8 +9,8 @@ import (
 	"regexp"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/akutz/goof"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	apitypes "github.com/rexray/rexray/libstorage/api/types"
@@ -474,6 +474,12 @@ func (c *CLI) initVolumeCmds() {
 					continue
 				}
 				p, uv, err := c.r.Integration().Mount(c.ctx, v.ID, "", opts)
+				// FIXME: (piguo) added to see detail mount error
+				log.Infof("piguo mount p %v", p)
+				log.Infof("piguo mount uv %v", uv)
+				log.Infof("piguo mount err %v", err)
+				// give the stack trace TODO: this is use less ... we need to know what happend inside mount
+				//panic(err)
 				if err != nil {
 					c.logVolumeLoopError(
 						processed,
